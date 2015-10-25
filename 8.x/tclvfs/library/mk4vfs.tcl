@@ -346,7 +346,7 @@ namespace eval mk4vfs {
 	    if {$mode == 0} {
 		periodicCommit $db
 	    }
-	    set v::mode($db) [lindex {readwrite readonly translucent} $mode]
+	    set v::mode($db) [lindex {translucent readwrite readwrite} $mode]
 	}
 	return $db
     }

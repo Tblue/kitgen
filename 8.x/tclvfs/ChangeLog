@@ -1,3 +1,35 @@
+2012-12-12  Andreas Kupries <andreask@activestate.com>
+
+	* library/template/collatevfs.tcl: Added missing provide command.
+
+	* library/template/templatevfs.tcl: Fixed missing default status 0 in
+	* pkgIndex.tcl.in: overriden exit command. Bumped to 1.5.5
+	
+	* pkgIndex.tcl.in: Added the various template filesystems to the
+	  index.
+
+	* pkgIndex.tcl.in: Long overdue bump of vfs::zip to
+	* library/zipvfs.tcl: 1.0.4. (Since 2009-02-07 or earlier).
+
+	* configure.in: Long overdue bump to version 1.4.2.
+	* configure: (1.4.1 was in 2009-02-07). Regenerated.
+	  Please bump the patchlevel for any future bug fixes,
+	  of the relevant sub-package(s).
+
+2012-07-12  Wojciech Kocjan <zoro2@users.sourceforge.net>
+
+	* zipvfs.tcl: Fix for Tcl 8.6 not properly streaming large files with
+	very big compression ratio, bug 3542959
+
+2012-07-04  Wojciech Kocjan <zoro2@users.sourceforge.net>
+
+	* zipvfs.tcl: Fix for streaming not working properly in certain zip
+	files; refactoring of zip::Data to reuse header parsing code for streams
+
+2012-03-15  Wojciech Kocjan <zoro2@users.sourceforge.net>
+
+	* zipvfs.tcl: Fix for zip symlinks not supported anymore, bug 3505283
+
 2011-11-28  Steve Huntley  <stephen.huntley@alum.mit.edu>
 
 	* vfslib.tcl: Applied contributed patch for bug 3412801.  Clean up watch

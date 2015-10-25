@@ -1,6 +1,6 @@
 # Removed provision of the backward compatible name. Moved to separate
 # file/package.
-package provide vfs::zip 1.0.3
+package provide vfs::zip 1.0.4
 
 package require vfs
 
@@ -73,9 +73,27 @@ proc vfs::zip::stat {zipfd name} {
     #::vfs::log "stat $name"
     ::zip::stat $zipfd $name sb
     #::vfs::log [array get sb]
-    # remove additional mode bits to prevent Tcl from reporting Fossil archives
-    # as socket types
-    set sb(mode) [expr {$sb(mode) & 0x01ff}]
+    # remove socket mode file type (0xc000) to prevent Tcl from reporting Fossil archives as socket types
+    if {($sb(mode) & 0xf000) == 0xc000} {
+        set sb(mode) [expr {$sb(mode) ^ 0xc000}]
+    }
+    # remove block device bit file type (0x6000)
+    if {($sb(mode) & 0xf000) == 0x6000} {
+        set sb(mode) [expr {$sb(mode) ^ 0x6000}]
+    }
+    # remove FIFO mode file type (0x1000)
+    if {($sb(mode) & 0xf000) == 0x1000} {
+        set sb(mode) [expr {$sb(mode) ^ 0x1000}]
+    }
+    # remove character device mode file type (0x2000)
+    if {($sb(mode) & 0xf000) == 0x2000} {
+        set sb(mode) [expr {$sb(mode) ^ 0x2000}]
+    }
+    # workaround for certain errorneus zip archives
+    if {($sb(mode) & 0xffff) == 0xffff} {
+	# change to directory type and set mode to 0777 + directory flag
+	set sb(mode) 0x41ff
+    }
     array get sb
 }
 
@@ -127,26 +145,7 @@ proc vfs::zip::open {zipfd name mode permissions} {
 #	    return [list $nfd]
 	    # use streaming for files larger than 1MB
 	    if {$::zip::useStreaming && $sb(size) >= 1048576} {
-		set buf [read $zipfd 30]
-		set n [binary scan $buf A4sssssiiiss \
-			    hdr sb(ver) sb(flags) sb(method) \
-			    time date \
-			    sb(crc) sb(csize) sb(size) flen elen]
-	    
-		if { ![string equal "PK\03\04" $hdr] } {
-		    binary scan $hdr H* x
-		    error "bad header: $x"
-		}
-	    
-		set sb(name) [read $zipfd [::zip::u_short $flen]]
-		set sb(extra) [read $zipfd [::zip::u_short $elen]]
-	    
-		if { $sb(flags) & 0x4 } {
-		    # Data Descriptor used
-		    set buf [read $zipfd 12]
-		    binary scan $buf iii sb(crc) sb(csize) sb(size)
-		}
-	    
+		seek $zipfd [zip::ParseDataHeader $zipfd sb] start
 		if { $sb(method) != 0} {
 		    set nfd [::zip::zstream $zipfd $sb(csize) $sb(size)]
 		}  else  {
@@ -330,8 +329,9 @@ proc zip::DosTime {date time} {
     return $res
 }
 
+proc zip::ParseDataHeader {fd arr {dataVar ""}} {
+    upvar 1 $arr sb
 
-proc zip::Data {fd arr verify} {
     upvar 1 $arr sb
 
     # APPNOTE A: Local file header
@@ -363,7 +363,13 @@ proc zip::Data {fd arr verify} {
 
     # APPNOTE B: File data
     #   if bit 3 of flags is set the csize comes from the central directory
-    set data [read $fd $sb(csize)]
+    set offset [tell $fd]
+    if {$dataVar != ""} {
+	upvar 1 $dataVar data
+	set data [read $fd $sb(csize)]
+    }  else  {
+	seek $fd $sb(csize) current
+    }
 
     # APPNOTE C: Data descriptor
     if { $sb(flags) & (1<<3) } {
@@ -378,7 +384,12 @@ proc zip::Data {fd arr verify} {
         set sb(csize) [expr {$sb(csize) & 0xffffffff}]
         set sb(size) [expr {$sb(size) & 0xffffffff}]
     }
-    
+    return $offset
+}
+
+proc zip::Data {fd arr verify} {
+    upvar 1 $arr sb
+    ParseDataHeader $fd $arr data
     switch -exact -- $sb(method) {
         0 {
             # stored; no compression
@@ -561,12 +572,13 @@ proc zip::open {path} {
 	for {set i 0} {$i < $cb(nitems)} {incr i} {
 	    zip::TOC $fd sb
 	    
+	    set origname [string trimright $sb(name) /]
 	    set sb(depth) [llength [file split $sb(name)]]
 	    
-	    set name [string trimright [string tolower $sb(name)] /]
+	    set name [string tolower $origname]
 	    set sba [array get sb]
 	    set toc($name) $sba
-	    FAKEDIR toc cbdir [file dirname $name]
+	    FAKEDIR toc cbdir [file dirname $origname]
 	}
 	foreach {n v} [array get cbdir] {
 	    set cbdir($n) [lsort -unique $v]
@@ -579,24 +591,24 @@ proc zip::open {path} {
     return $fd
 }
 
-proc zip::FAKEDIR {tocarr cbdirarr path} {
+proc zip::FAKEDIR {tocarr cbdirarr origpath} {
     upvar 1 $tocarr toc $cbdirarr cbdir
 
+    set path [string tolower $origpath]
     if { $path == "."} { return }
-
 
     if { ![info exists toc($path)] } {
 	# Implicit directory
 	lappend toc($path) \
-		name $path \
+		name $origpath \
 		type directory mtime 0 size 0 mode 0777 \
 		ino -1 depth [llength [file split $path]]
 	
 	set parent [file dirname $path]
 	if {$parent == "."} {set parent ""}
-	lappend cbdir($parent) [file tail $path]
+	lappend cbdir($parent) [file tail $origpath]
     }
-    FAKEDIR toc cbdir [file dirname $path]
+    FAKEDIR toc cbdir [file dirname $origpath]
 }
 
 proc zip::exists {fd path} {
@@ -858,7 +870,9 @@ proc ::zip::zstream_handler {istart ifd clen ilen cmd fd {a1 ""} {a2 ""}} {
 		    set data [read $ifd $c]
 		    set tell [tell $ifd]
 		    zstream_put $fd $data
-		    append buf [zstream_get $fd]
+		    while {[string length [set bufdata [zstream_get $fd]]] > 0} {
+			append buf $bufdata
+		    }
 		}
 	    }
 	    return $r
