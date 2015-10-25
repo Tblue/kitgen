@@ -4,12 +4,12 @@
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\"
-.so man.macros
 .TH code n 3.0 itcl "[incr\ Tcl]"
+.so man.macros
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-code \- capture the namespace context for a code fragment
+itcl::code \- capture the namespace context for a code fragment
 .SH SYNOPSIS
 \fBitcl::code \fR?\fB-namespace \fIname\fR? \fIcommand \fR?\fIarg arg ...\fR?
 .BE

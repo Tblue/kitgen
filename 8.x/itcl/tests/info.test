@@ -11,10 +11,10 @@
 # See the file "license.terms" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package require tcltest 2.1
+package require tcltest 2.2
 namespace import ::tcltest::test
-
 ::tcltest::loadTestedCommands
+package require itcl
 
 # ----------------------------------------------------------------------
 #  Class definition with one of everything
@@ -67,7 +67,14 @@ test info-1.1 {define a simple class} {
 
 test info-1.2 {info: errors trigger usage info} {
     list [catch {namespace eval test_info {info}} msg] $msg
-} {1 {wrong # args: should be one of...
+} {1 {wrong # args: should be "::itcl::builtin::Info subcommand ?arg ...?"}}
+
+test info-1.2a {info: errors trigger usage info
+} -body {
+    list [catch {namespace eval test_info {info}} msg] $msg
+} -constraints {
+    needs_frq_1773103
+} -result {1 {wrong # args: should be one of...
   info args procname
   info body procname
   info class
@@ -337,6 +344,10 @@ test info-4.2b {query inheritance info} {
     list [ti info inherit] [ti do info inherit]
 } {::test_info_base {}}
 
+test info-4.2c {query inheritance info} {
+    ti do ti info inherit
+} {::test_info_base}
+
 test info-4.3a {query heritage info (wrong # args)} {
     list [catch {ti info heritage x} result] $result
 } {1 {wrong # args: should be "info heritage"}}
@@ -344,6 +355,10 @@ test info-4.3a {query heritage info (wrong # args)} {
 test info-4.3b {query heritage info} {
     list [ti info heritage] [ti do info heritage]
 } {{::test_info ::test_info_base} ::test_info_base}
+
+test info-4.3c {query heritage info} {
+    ti do ti info heritage
+} {::test_info ::test_info_base}
 
 test info-4.4a {query argument list (wrong # args)} {
     list [catch {ti info args} result] $result \

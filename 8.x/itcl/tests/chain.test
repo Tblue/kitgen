@@ -13,8 +13,8 @@
 
 package require tcltest 2.1
 namespace import ::tcltest::test
-
 ::tcltest::loadTestedCommands
+package require itcl
 
 # ----------------------------------------------------------------------
 #  Chaining methods and procs
@@ -22,6 +22,7 @@ namespace import ::tcltest::test
 test chain-1.1 {define simple classes with inheritance} {
     itcl::class test_chain_a {
         constructor {args} {
+#
             eval chain $args
         } {
             global ::test_chain_status
@@ -40,6 +41,7 @@ test chain-1.1 {define simple classes with inheritance} {
     }
     itcl::class test_chain_b {
         constructor {args} {
+#
             eval chain $args
         } {
             global ::test_chain_status

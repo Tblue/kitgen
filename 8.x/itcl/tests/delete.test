@@ -11,10 +11,10 @@
 # See the file "license.terms" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package require tcltest 2.1
+package require tcltest 2.2
 namespace import ::tcltest::test
-
 ::tcltest::loadTestedCommands
+package require itcl
 
 # ----------------------------------------------------------------------
 #  Deleting classes and objects
@@ -135,6 +135,7 @@ test delete-3.4 {object destructors get invoked, even during catastrophe} {
     lsort $test_delete_watch
 } {::test_delete0 ::test_delete1 ::test_delete2 ::test_delete_base0 ::test_delete_base1 ::test_delete_base2}
 
+
 # ----------------------------------------------------------------------
 #  Self-destructing objects
 # ----------------------------------------------------------------------
@@ -155,10 +156,13 @@ test delete-4.1 {define a class where objects destroy themselves} {
     }
 } {}
 
-test delete-4.2 {an object can delete itself} {
+test delete-4.2 {an object can delete itself
+} -body {
     set obj [test_delete #auto -x "data stays"]
     list [$obj killme {return $x}] [itcl::find objects -isa test_delete]
-} {{data stays} {}}
+} -constraints {
+    only_working_in_itcl3.4
+} -result {{data stays} {}}
 
 test delete-4.3 {the "this" variable becomes null after delete} {
     set obj [test_delete #auto]
