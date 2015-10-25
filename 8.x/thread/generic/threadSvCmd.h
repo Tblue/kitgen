@@ -1,4 +1,4 @@
-/* 
+/*
  * This is the header file for the module that implements shared variables.
  * for protected multithreaded access.
  *
@@ -6,8 +6,6 @@
  *
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.17 2010/03/31 08:50:24 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -29,26 +27,20 @@
 
 /*
  * Uncomment following line to force command-line
- * compatibility with older thread::sv_ commands
- * If you leave it commented-out, the older style
- * command is going to be included in addition to
- * the new tsv::* style.
+ * compatibility with older thread::sv_ commands.
  */
 
 /* #define OLD_COMPAT 1 */
 
-#ifdef NS_AOLSERVER
-# ifdef NSV_COMPAT
-#  define TSV_CMD_PREFIX "nsv_"  /* Compatiblity prefix for AOLserver */
-# else
-#  define TSV_CMD_PREFIX "sv_"   /* Regular command prefix for AOLserver */
-# endif
+#ifdef NSV_COMPAT
+# define TSV_CMD2_PREFIX "nsv_"  /* Compatiblity prefix for NaviServer/AOLserver */
 #else
-# ifdef OLD_COMPAT
-#  define TSV_CMD_PREFIX "thread::sv_" /* Old command prefix for Tcl */
-# else
-#  define TSV_CMD_PREFIX "tsv::" /* Regular command prefix for Tcl */
-# endif
+# define TSV_CMD2_PREFIX "sv_"   /* Regular command prefix for NaviServer/AOLserver */
+#endif
+#ifdef OLD_COMPAT
+# define TSV_CMD_PREFIX "thread::sv_" /* Old command prefix for Tcl */
+#else
+# define TSV_CMD_PREFIX "tsv::" /* Regular command prefix for Tcl */
 #endif
 
 /*
@@ -85,29 +77,29 @@
 #define SV_ERROR          -1   /* Object may be in incosistent state */
 
 /*
- * Definitions of functions implementing simple key/value 
+ * Definitions of functions implementing simple key/value
  * persistent storage for shared variable arrays.
  */
 
 typedef ClientData (ps_open_proc)(const char*);
 
-typedef int (ps_get_proc)   (ClientData, const char*, char**, int*);
-typedef int (ps_put_proc)   (ClientData, const char*, char*, int);
-typedef int (ps_first_proc) (ClientData, char**, char**, int*);
-typedef int (ps_next_proc)  (ClientData, char**, char**, int*);
+typedef int (ps_get_proc)   (ClientData, const char*, char**, size_t*);
+typedef int (ps_put_proc)   (ClientData, const char*, char*, size_t);
+typedef int (ps_first_proc) (ClientData, char**, char**, size_t*);
+typedef int (ps_next_proc)  (ClientData, char**, char**, size_t*);
 typedef int (ps_delete_proc)(ClientData, const char*);
 typedef int (ps_close_proc) (ClientData);
-typedef void(ps_free_proc)  (char*);
+typedef void(ps_free_proc)  (void*);
 
-typedef char* (ps_geterr_proc)(ClientData);
+typedef const char* (ps_geterr_proc)(ClientData);
 
 /*
  * This structure maintains a bunch of pointers to functions implementing
- * the simple persistence layer for the shared variable arrays. 
+ * the simple persistence layer for the shared variable arrays.
  */
 
 typedef struct PsStore {
-    char *type;                /* Type identifier of the persistent storage */
+    const char *type;          /* Type identifier of the persistent storage */
     ClientData psHandle;       /* Handle to the opened storage */
     ps_open_proc   *psOpen;    /* Function to open the persistent key store */
     ps_get_proc    *psGet;     /* Function to retrieve value bound to key */
@@ -123,13 +115,12 @@ typedef struct PsStore {
 
 /*
  * The following structure defines a collection of arrays.
- * Only the arrays within a given bucket share a lock, 
+ * Only the arrays within a given bucket share a lock,
  * allowing for more concurency.
  */
 
 typedef struct Bucket {
     Sp_RecursiveMutex lock;    /* */
-    Tcl_ThreadId lockt;        /* Thread holding the lock */
     Tcl_HashTable arrays;      /* Hash table of all arrays in bucket */
     Tcl_HashTable handles;     /* Hash table of given-out handles in bucket */
     struct Container *freeCt;  /* List of free Tcl-object containers */
@@ -161,6 +152,7 @@ typedef struct Container {
     int epoch;                 /* Track object changes */
     char *chunkAddr;           /* Address of one chunk of object containers */
     struct Container *nextPtr; /* Next object container in the free list */
+    int aolSpecial;
 } Container;
 
 /*
@@ -170,10 +162,11 @@ typedef struct Container {
 typedef struct SvCmdInfo {
     char *name;                 /* The short name of the command */
     char *cmdName;              /* Real (rewritten) name of the command */
+    char *cmdName2;             /* Real AOL (rewritten) name of the command */
     Tcl_ObjCmdProc *objProcPtr; /* The object-based command procedure */
     Tcl_CmdDeleteProc *delProcPtr; /* Pointer to command delete function */
-    ClientData *clientData;     /* Pointer passed to above command */
     struct SvCmdInfo *nextPtr;  /* Next in chain of registered commands */
+    int aolSpecial;
 } SvCmdInfo;
 
 /*
@@ -197,19 +190,19 @@ typedef struct RegType {
  * Limited API functions
  */
 
-void 
-Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*,ClientData);
+MODULE_SCOPE void
+Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*, int);
 
-void 
+MODULE_SCOPE void
 Sv_RegisterObjType(const Tcl_ObjType*, Tcl_DupInternalRepProc*);
 
-void 
-Sv_RegisterPsStore(PsStore*);
+MODULE_SCOPE void
+Sv_RegisterPsStore(const PsStore*);
 
-int
+MODULE_SCOPE int
 Sv_GetContainer(Tcl_Interp*,int,Tcl_Obj*const objv[],Container**,int*,int);
 
-int
+MODULE_SCOPE int
 Sv_PutContainer(Tcl_Interp*, Container*, int);
 
 /*
@@ -217,7 +210,7 @@ Sv_PutContainer(Tcl_Interp*, Container*, int);
  * copying objects when loaded to and retrieved from shared array.
  */
 
-Tcl_Obj* Sv_DuplicateObj(Tcl_Obj*);
+MODULE_SCOPE Tcl_Obj* Sv_DuplicateObj(Tcl_Obj*);
 
 #endif /* _SV_H_ */
 

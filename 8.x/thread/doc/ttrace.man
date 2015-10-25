@@ -1,9 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin ttrace n 2.6]
+[manpage_begin ttrace n 2.7]
 [moddesc {Tcl Threading}]
 [titledesc {Trace-based interpreter initialization}]
 [require Tcl 8.4]
-[require Thread [opt 2.6]]
+[require Thread [opt 2.7]]
 
 [description]
 This package creates a framework for on-demand replication of the
@@ -21,7 +21,7 @@ with the Tcl threading extension:
 [example {
 
     % package require Ttrace
-    2.6.5
+    2.7.0
 
     % set t1 [thread::create {package require Ttrace; thread::wait}]
     tid0x1802800
@@ -60,7 +60,7 @@ For AOLserver, only newly created threads actually receive the
 epoch change. For the Tcl threading extension, all threads created by
 the extension are automatically updated. If the command execution 
 resulted in Tcl error, no state propagation takes place.
-[nl]
+[para]
 This is the most important user-level command of the package as
 it wraps most of the commands described below. This greatly
 simplifies things, because user need to learn just this (one)

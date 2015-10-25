@@ -1,4 +1,4 @@
-/* 
+/*
  * threadUnix.c --
  *
  * Unix specific aspects for the thread extension.
@@ -13,8 +13,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * RCS: @(#) $Id: threadUnix.c,v 1.1 2002/01/19 23:27:09 vasiljevic Exp $
  */
 
 #include "../generic/tclThread.h"

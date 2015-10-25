@@ -6,11 +6,10 @@
 #
 # Copyright (c) 1998-1999 by Scriptics Corporation.
 # All rights reserved.
-# 
-# RCS: @(#) $Id: all.tcl,v 1.5 2004/12/18 13:26:03 vasiljevic Exp $
 
 package require tcltest
-namespace import -force ::tcltest::*
+::tcltest::loadTestedCommands
+package require Thread
 
 set ::tcltest::testSingleFile false
 set ::tcltest::testsDirectory [file dir [info script]]
@@ -37,13 +36,7 @@ if {[llength $::tcltest::matchFiles] > 0} {
 set timeCmd {clock format [clock seconds]}
 puts stdout "Tests began at [eval $timeCmd]"
 
-
 # These tests need to know which is the main thread
-
-# Require the accurate version for the tests so we don't pick up
-# older Thread packages by accident
-package require Tcl 8.4
-package require Thread 2.6
 set ::tcltest::mainThread [thread::id]
 
 puts stdout "Thread [package provide Thread]"

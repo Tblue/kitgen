@@ -2,8 +2,6 @@
 dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
-#
-# RCS: @(#) $Id: configure.in,v 1.32 2010/03/31 08:51:18 vasiljevic Exp $
 
 #-----------------------------------------------------------------------
 # Sample configure.in for Tcl Extensions.  The only places you should
@@ -19,7 +17,7 @@ dnl	to configure the system for the local environment.
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([thread], [2.6.6])
+AC_INIT([thread], [2.7.2])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -27,7 +25,7 @@ AC_INIT([thread], [2.6.6])
 # as well as PKG_LIB_FILE and PKG_STUB_LIB_FILE.
 #--------------------------------------------------------------------
 
-TEA_INIT([3.7])
+TEA_INIT([3.9])
 
 AC_CONFIG_AUX_DIR(tclconfig)
 
@@ -37,6 +35,15 @@ AC_CONFIG_AUX_DIR(tclconfig)
 
 TEA_PATH_TCLCONFIG
 TEA_LOAD_TCLCONFIG
+
+if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+Found config for Tcl ${TCL_VERSION}])
+fi
+if test "${TCL_MINOR_VERSION}" -lt 4 ; then
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+Found config for Tcl ${TCL_VERSION}])
+fi
 
 #--------------------------------------------------------------------
 # Load the tkConfig.sh file if necessary (Tk extension)
@@ -55,22 +62,22 @@ TEA_PREFIX
 #-----------------------------------------------------------------------
 # Standard compiler checks.
 # This sets up CC by using the CC env var, or looks for gcc otherwise.
-# This also calls AC_PROG_CC, AC_PROG_INSTALL and a few others to create
-# the basic setup necessary to compile executables.
+# This also calls AC_PROG_CC and a few others to create the basic setup
+# necessary to compile executables.
 #-----------------------------------------------------------------------
 
 TEA_SETUP_COMPILER
 
 #--------------------------------------------------------------------
-# Check if building with optional Gdbm package. This will declare 
+# Check if building with optional Gdbm package. This will declare
 # GDBM_CFLAGS and GDBM_LIBS variables.
 #--------------------------------------------------------------------
 
 TCLTHREAD_WITH_GDBM
 
 #--------------------------------------------------------------------
-# Locate the AOLserver dir for compilation as AOLserver module.
-# This will declare AOL_INCLUDES, AOL_LIBS and define NS_AOLSERVER.
+# Locate the NaviServer/AOLserver dir for compilation as NaviServer/AOLserver module.
+# This will declare NS_INCLUDES, NS_LIBS and define NS_AOLSERVER.
 #--------------------------------------------------------------------
 
 NS_PATH_AOLSERVER
@@ -85,7 +92,8 @@ NS_PATH_AOLSERVER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 
-TEA_ADD_SOURCES([generic/threadCmd.c          \
+TEA_ADD_SOURCES([generic/threadNs.c           \
+                 generic/threadCmd.c          \
                  generic/threadSvCmd.c        \
                  generic/threadSpCmd.c        \
                  generic/threadPoolCmd.c      \
@@ -95,9 +103,9 @@ TEA_ADD_SOURCES([generic/threadCmd.c          \
                  generic/tclXkeylist.c        \
 ])
 
-TEA_ADD_HEADERS([])
-TEA_ADD_INCLUDES([${AOL_INCLUDES}])
-TEA_ADD_LIBS([${GDBM_LIBS} ${AOL_LIBS}])
+TEA_ADD_HEADERS([generic/tclThread.h])
+TEA_ADD_INCLUDES([${NS_INCLUDES}])
+TEA_ADD_LIBS([${GDBM_LIBS} ${NS_LIBS}])
 TEA_ADD_CFLAGS([${GDBM_CFLAGS}])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([lib/ttrace.tcl])
@@ -117,14 +125,11 @@ TEA_ADD_TCL_SOURCES([lib/ttrace.tcl])
 #--------------------------------------------------------------------
 
 if test "${TEA_PLATFORM}" = "windows" ; then
-    AC_DEFINE(BUILD_thread)
-    CLEANFILES="*.lib *.dll *.exp *.ilk *.pdb vc*.pch"
     TEA_ADD_SOURCES([win/threadWin.c])
     TEA_ADD_INCLUDES([-I\"$(${CYGPATH} ${srcdir}/win)\"])
 else
     TEA_ADD_SOURCES([unix/threadUnix.c])
 fi
-AC_SUBST(CLEANFILES)
 
 #--------------------------------------------------------------------
 # __CHANGE__
@@ -178,6 +183,15 @@ TEA_ENABLE_SYMBOLS
 #--------------------------------------------------------------------
 
 AC_DEFINE(USE_TCL_STUBS, 1, [Use Tcl stubs])
+
+#--------------------------------------------------------------------
+# Enable compile-time support for TIP #143 and TIP #285.  When using
+# a pre-Tcl 8.5 or 8.6 core, respectively, the actual functionality
+# will not be available at runtime.
+#--------------------------------------------------------------------
+
+AC_DEFINE(TCL_TIP143, 1, [Enable TIP #143 support])
+AC_DEFINE(TCL_TIP285, 1, [Enable TIP #285 support])
 
 #--------------------------------------------------------------------
 # This macro generates a line to use when building a library.  It

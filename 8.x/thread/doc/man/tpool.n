@@ -63,8 +63,6 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: tpool.n,v 1.16 2009/05/04 21:56:51 ferrieux Exp $
-'\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
 .nr ^l \n(.l
@@ -241,7 +239,7 @@ Database Class:	\\fB\\$3\\fR
 \\$1\l'|0\(ul'\\$2
 ..
 
-.TH "tpool" n 2.6  "Tcl Threading"
+.TH "tpool" n 2.7  "Tcl Threading"
 .BS
 .SH "NAME"
 tpool \-
@@ -249,7 +247,7 @@ Part of the Tcl threading extension implementing pools of worker threads.
 .SH "SYNOPSIS"
 package require \fBTcl  8.4\fR
 .sp
-package require \fBThread  ?2.6?\fR
+package require \fBThread  ?2.7?\fR
 .sp
 \fBtpool::create\fR ?options?
 .sp
@@ -325,8 +323,7 @@ put the worker thread into the event loop, by evaluating the
 \fBvwait\fR or other related Tcl commands, the worker thread
 will not be in the idle state, hence the idle timer will not be
 taken into account.
-Default value for this option is unspecified, hence, the Tcl interpreter
-of the worker thread will contain just the initial set of Tcl commands.
+Default value for this option is unspecified.
 .TP
 -initcmd script
 Sets a Tcl script used to initialize new worker thread. This is usually

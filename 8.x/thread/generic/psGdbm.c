@@ -4,8 +4,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * RCS: @(#) $Id: psGdbm.c,v 1.2 2004/12/18 13:26:03 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -31,10 +29,10 @@ static ps_geterr_proc ps_gdbm_geterr;
 
 /*
  * This structure collects all the various pointers
- * to the functions implementing the gdbm store. 
+ * to the functions implementing the gdbm store.
  */
 
-PsStore GdbmStore = {
+const PsStore GdbmStore = {
     "gdbm",
     NULL,
     ps_gdbm_open,
@@ -64,7 +62,7 @@ PsStore GdbmStore = {
  *
  *-----------------------------------------------------------------------------
  */
-void 
+void
 Sv_RegisterGdbmStore(void)
 {
     Sv_RegisterPsStore(&GdbmStore);
@@ -85,16 +83,16 @@ Sv_RegisterGdbmStore(void)
  *
  *-----------------------------------------------------------------------------
  */
-static ClientData 
-ps_gdbm_open(path)
-    const char *path;
+static ClientData
+ps_gdbm_open(
+    const char *path)
 {
     GDBM_FILE dbf;
     char *ext;
     Tcl_DString toext;
 
     Tcl_DStringInit(&toext);
-    ext = Tcl_UtfToExternalDString(NULL, (char*)path, strlen(path), &toext);
+    ext = Tcl_UtfToExternalDString(NULL, path, strlen(path), &toext);
     dbf = gdbm_open(ext, 512, GDBM_WRCREAT|GDBM_SYNC|GDBM_NOLOCK, 0666, NULL);
     Tcl_DStringFree(&toext);
 
@@ -116,9 +114,9 @@ ps_gdbm_open(path)
  *
  *-----------------------------------------------------------------------------
  */
-static int 
-ps_gdbm_close(handle)
-    ClientData handle;
+static int
+ps_gdbm_close(
+    ClientData handle)
 {
     gdbm_close((GDBM_FILE)handle);
 
@@ -137,16 +135,16 @@ ps_gdbm_close(handle)
  *      0 - ok
  *
  * Side effects:
- *      Data returned must be freed by the caller. 
+ *      Data returned must be freed by the caller.
  *
  *-----------------------------------------------------------------------------
  */
-static int 
-ps_gdbm_get(handle, key, dataptrptr, lenptr)
-     ClientData handle;
-     const char   *key;
-     char **dataptrptr;
-     int       *lenptr;
+static int
+ps_gdbm_get(
+     ClientData handle,
+     const char   *key,
+     char **dataptrptr,
+     size_t    *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
@@ -158,7 +156,7 @@ ps_gdbm_get(handle, key, dataptrptr, lenptr)
     if (drec.dptr == NULL) {
         return 1;
     }
-    
+
     *dataptrptr = drec.dptr;
     *lenptr = drec.dsize;
 
@@ -177,16 +175,16 @@ ps_gdbm_get(handle, key, dataptrptr, lenptr)
  *      0 - ok
  *
  * Side effects:
- *      Data returned must be freed by the caller. 
+ *      Data returned must be freed by the caller.
  *
  *-----------------------------------------------------------------------------
  */
-static int 
-ps_gdbm_first(handle, keyptrptr, dataptrptr, lenptr)
-    ClientData  handle;
-    char   **keyptrptr;
-    char  **dataptrptr;
-    int        *lenptr;
+static int
+ps_gdbm_first(
+    ClientData  handle,
+    char   **keyptrptr,
+    char  **dataptrptr,
+    size_t     *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
@@ -199,7 +197,7 @@ ps_gdbm_first(handle, keyptrptr, dataptrptr, lenptr)
     if (drec.dptr == NULL) {
         return 1;
     }
-    
+
     *dataptrptr = drec.dptr;
     *lenptr = drec.dsize;
     *keyptrptr = dkey.dptr;
@@ -219,15 +217,15 @@ ps_gdbm_first(handle, keyptrptr, dataptrptr, lenptr)
  *      0 - ok
  *
  * Side effects:
- *      Data returned must be freed by the caller. 
+ *      Data returned must be freed by the caller.
  *
  *-----------------------------------------------------------------------------
  */
-static int ps_gdbm_next(handle, keyptrptr, dataptrptr, lenptr)
-    ClientData  handle;
-    char   **keyptrptr;
-    char  **dataptrptr;
-    int        *lenptr;
+static int ps_gdbm_next(
+    ClientData  handle,
+    char   **keyptrptr,
+    char  **dataptrptr,
+    size_t     *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey, dnext;
@@ -245,7 +243,7 @@ static int ps_gdbm_next(handle, keyptrptr, dataptrptr, lenptr)
     if (drec.dptr == NULL) {
         return 1;
     }
-    
+
     *dataptrptr = drec.dptr;
     *lenptr = drec.dsize;
     *keyptrptr = dnext.dptr;
@@ -266,16 +264,16 @@ static int ps_gdbm_next(handle, keyptrptr, dataptrptr, lenptr)
  *
  * Side effects:
  *      If the key is already associated with some user data, this will
- *      be replaced by the new data chunk. 
+ *      be replaced by the new data chunk.
  *
  *-----------------------------------------------------------------------------
  */
-static int 
-ps_gdbm_put(handle, key, dataptr, len)
-    ClientData handle;
-    const char   *key;
-    char     *dataptr;
-    int           len;
+static int
+ps_gdbm_put(
+    ClientData handle,
+    const char   *key,
+    char     *dataptr,
+    size_t        len)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
@@ -308,14 +306,14 @@ ps_gdbm_put(handle, key, dataptr, len)
  *
  * Side effects:
  *      If the key is already associated with some user data, this will
- *      be replaced by the new data chunk. 
+ *      be replaced by the new data chunk.
  *
  *-----------------------------------------------------------------------------
  */
-static int 
-ps_gdbm_delete(handle, key)
-    ClientData handle;
-    const char   *key;
+static int
+ps_gdbm_delete(
+    ClientData handle,
+    const char   *key)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum dkey;
@@ -348,8 +346,8 @@ ps_gdbm_delete(handle, key)
  *-----------------------------------------------------------------------------
  */
 static void
-ps_gdbm_free(data)
-    char   *data;
+ps_gdbm_free(
+    void   *data)
 {
     free(data);
 }
@@ -370,9 +368,9 @@ ps_gdbm_free(data)
  *
  *-----------------------------------------------------------------------------
  */
-static char*
-ps_gdbm_geterr(handle)
-    ClientData handle;
+static const char*
+ps_gdbm_geterr(
+    ClientData handle)
 {
    /*
     * The problem with gdbm interface is that it uses the global

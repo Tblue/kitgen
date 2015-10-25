@@ -5,11 +5,9 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: tpool.html,v 1.16 2009/05/04 21:56:51 ferrieux Exp $ tpool.n
-   -->
 
 <body>
-<h1> tpool(n) 2.6  &quot;Tcl Threading&quot;</h1>
+<h1> tpool(n) 2.7  &quot;Tcl Threading&quot;</h1>
 <h2><a name="name">NAME</a></h2>
 <p>
 <p> tpool - 
@@ -31,7 +29,7 @@
 <h2><a name="synopsis">SYNOPSIS</a></h2>
 <p>
 package require <b>Tcl 8.4</b><br>
-package require <b>Thread ?2.6?</b><br>
+package require <b>Thread ?2.7?</b><br>
 <br><table border=1 width=100% cellspacing=0 cellpadding=0><tr            bgcolor=lightyellow><td bgcolor=lightyellow><table 0 width=100% cellspacing=0 cellpadding=0><tr valign=top ><td ><a href="#1"><b class='cmd'>tpool::create</b> ?options?</a></td></tr>
 <tr valign=top ><td ><a href="#2"><b class='cmd'>tpool::names</b> </a></td></tr>
 <tr valign=top ><td ><a href="#3"><b class='cmd'>tpool::post</b> ?-detached? ?-nowait? <i class='arg'>tpool</i> <i class='arg'>script</i></a></td></tr>
@@ -110,8 +108,7 @@ put the worker thread into the event loop, by evaluating the
 <b class='cmd'>vwait</b> or other related Tcl commands, the worker thread 
 will not be in the idle state, hence the idle timer will not be 
 taken into account.
-Default value for this option is unspecified, hence, the Tcl interpreter
-of the worker thread will contain just the initial set of Tcl commands.
+Default value for this option is unspecified.
 
 <br><br>
 <dt>-initcmd script<dd>

@@ -13,8 +13,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * RCS: @(#) $Id: threadWin.c,v 1.5 2002/01/27 04:52:21 davygrvy Exp $
  */
 
 #include "../generic/tclThread.h"
@@ -41,7 +39,7 @@ ThreadpKill (Tcl_Interp *interp, long id)
 
     if (winOpenThreadProc) {
 	hThread = winOpenThreadProc(THREAD_TERMINATE, FALSE, id);
-	/* 
+	/*
 	 * not to be misunderstood as "devilishly clever",
 	 * but evil in it's pure form.
 	 */

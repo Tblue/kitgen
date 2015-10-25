@@ -1,11 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin tpool n 2.6]
+[manpage_begin tpool n 2.7]
 [moddesc {Tcl Threading}]
-[titledesc {
-    Part of the Tcl threading extension implementing pools of worker threads.
-}]
+[titledesc {Part of the Tcl threading extension implementing pools of worker threads.}]
 [require Tcl 8.4]
-[require Thread [opt 2.6]]
+[require Thread [opt 2.7]]
 
 [description]
 This package creates and manages pools of worker threads. It allows you
@@ -25,12 +23,12 @@ timer (or any other supported) events.
 This command creates new threadpool. It accepts several options as
 key-value pairs. Options are used to tune some threadpool parameters.
 The command returns the ID of the newly created threadpool.
-[nl]
+[para]
 Following options are supported:
 
-[list_begin definitions]
+[list_begin options]
 
-[lst_item {-minworkers number}]
+[opt_def -minworkers [arg number]]
 Minimum number of worker threads needed for this threadpool instance.
 During threadpool creation, the implementation will create somany
 worker threads upfront and will keep at least number of them alive
@@ -40,7 +38,7 @@ threadpool will have no worker threads initialy. All worker threads
 will be started on demand by callers running [cmd tpool::post] command
 and posting jobs to the job queue.
 
-[lst_item {-maxworkers number}]
+[opt_def -maxworkers [arg number]]
 Maximum number of worker threads allowed for this threadpool instance.
 If a new job is pending and there are no idle worker threads available,
 the implementation will try to create new worker thread. If the number
@@ -54,8 +52,7 @@ Default value of this parameter is 4 (four), which means that the
 threadpool instance will allow maximum of 4 worker threads running jobs
 or being idle waiting for new jobs to get posted to the job queue.
 
-
-[lst_item {-idletime seconds}]
+[opt_def -idletime [arg seconds]]
 Time in seconds an idle worker thread waits for the job to get posted
 to the job queue. If no job arrives during this interval and the time
 expires, the worker thread will check the number of currently available
@@ -64,17 +61,15 @@ worker threads and if the number is higher than the number set by the
 If an [option exitscript] has been defined, the exiting worker thread 
 will first run the script and then exit. Errors from the exit script, 
 if any, are ignored.
-[nl]
+[para]
 The idle worker thread is not servicing the event loop. If you, however,
 put the worker thread into the event loop, by evaluating the
 [cmd vwait] or other related Tcl commands, the worker thread 
 will not be in the idle state, hence the idle timer will not be 
 taken into account.
-Default value for this option is unspecified, hence, the Tcl interpreter
-of the worker thread will contain just the initial set of Tcl commands.
+Default value for this option is unspecified.
 
-[lst_item {-initcmd script}]
-
+[opt_def -initcmd [arg script]]
 Sets a Tcl script used to initialize new worker thread. This is usually
 used to load packages and commands in the worker, set default variables,
 create namespaces, and such. If the passed script runs into a Tcl error, 
@@ -83,8 +78,7 @@ the worker will not be created and the initiating command (either the
 Default value for this option is unspecified, hence, the Tcl interpreter of 
 the worker thread will contain just the initial set of Tcl commands.
 
-[lst_item {-exitcmd script}]
-
+[opt_def -exitcmd [arg script]]
 Sets a Tcl script run when the idle worker thread exits. This is normaly
 used to cleanup the state of the worker thread, release reserved resources,
 cleanup memory and such.
@@ -93,7 +87,7 @@ on the worker thread exit.
 
 [list_end]
 
-[nl] 
+[para] 
 
 [call [cmd tpool::names]]
 
@@ -114,14 +108,14 @@ service events while waiting for one of the worker threads to become idle.
 If the optional [opt -nowait] argument is given, the command will not wait
 for one idle worker. It will just place the job in the pool's job queue
 and return immediately.
-[nl]
+[para]
 The command returns the ID of the posted job. This ID is used for subsequent
 [cmd tpool::wait], [cmd tpool::get] and [cmd tpool::cancel] commands to wait
 for and retrieve result of the posted script, or cancel the posted job
 respectively. If the optional [opt -detached] argument is specified, the 
 command will post a detached job. A detached job can not be cancelled or 
 waited upon and is not identified by the job ID.
-[nl]
+[para]
 If the threadpool [arg tpool] is not found in the list of active
 thread pools, the command will throw error. The error will also be triggered
 if the newly created worker thread fails to initialize.
@@ -132,7 +126,7 @@ This command waits for one or many jobs, whose job IDs are given in the
 [arg joblist] to get processed by the worker thread(s). If none of the
 specified jobs are ready, the command will enter the event loop, service
 events and wait for the first job to get ready.
-[nl]
+[para]
 The command returns the list of completed job IDs. If the optional variable
 [opt varname] is given, it will be set to the list of jobs in the 
 [arg joblist] which are still pending. If the threadpool [arg tpool] 

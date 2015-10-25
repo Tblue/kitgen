@@ -1,4 +1,4 @@
-/* 
+/*
  * tclXkeylist.h --
  *
  * Extended Tcl keyed list commands and interfaces.
@@ -12,25 +12,24 @@
  * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *-----------------------------------------------------------------------------
- *
- * Rcsid: @(#)$Id: tclXkeylist.h,v 1.2 2009/07/22 11:25:34 nijtmans Exp $
- *-----------------------------------------------------------------------------
  */
 
 #ifndef _KEYLIST_H_
 #define _KEYLIST_H_
 
-/* 
+#include "tclThreadInt.h"
+
+/*
  * Keyed list object interface commands
  */
 
-Tcl_Obj* TclX_NewKeyedListObj();
+MODULE_SCOPE Tcl_Obj* TclX_NewKeyedListObj();
 
-void TclX_KeyedListInit(Tcl_Interp*);
-int  TclX_KeyedListGet(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_Obj**);
-int  TclX_KeyedListSet(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_Obj*);
-int  TclX_KeyedListDelete(Tcl_Interp*, Tcl_Obj*, const char*);
-int  TclX_KeyedListGetKeys(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_Obj**);
+MODULE_SCOPE void TclX_KeyedListInit(Tcl_Interp*);
+MODULE_SCOPE int  TclX_KeyedListGet(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_Obj**);
+MODULE_SCOPE int  TclX_KeyedListSet(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_Obj*);
+MODULE_SCOPE int  TclX_KeyedListDelete(Tcl_Interp*, Tcl_Obj*, const char*);
+MODULE_SCOPE int  TclX_KeyedListGetKeys(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_Obj**);
 
 /*
  * Exported for usage in Sv_DuplicateObj. This is slightly
@@ -38,7 +37,7 @@ int  TclX_KeyedListGetKeys(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_Obj**);
  * It does a proper deep-copy of the keyed list object.
  */
 
-void DupKeyedListInternalRepShared(Tcl_Obj*, Tcl_Obj*);
+MODULE_SCOPE void DupKeyedListInternalRepShared(Tcl_Obj*, Tcl_Obj*);
 
 #endif /* _KEYLIST_H_ */
 
