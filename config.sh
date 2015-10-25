@@ -74,7 +74,7 @@ case $cli-$dyn-$gui in 0-0-0) cli=1 dyn=1 gui=1 ;; esac
       echo "LDXXFLAGS  = -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
       echo "GUI_OPTS   = -L/usr/X11R6/lib -lX11 -lXss"
       if [ $root != "8.4" ]; then
-          echo "GUI_OPTS  += -lXft -lXext"
+          echo "GUI_OPTS  += -lXft -lXext -lfontconfig"
       fi
       case $b64 in 1)
         echo "CFLAGS     += -m64" ;;
