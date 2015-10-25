@@ -1,13 +1,29 @@
 # makefile.vc --                                               -*- Makefile -*-
 #
 #  This is an NMAKE makefile that makes use of build-time testing of the
-#  available compiler to support MSVC 6, 7 and 8 and also the AMD64 and IA64
+#  available compiler to support MSVC from 6 to 10 and also the AMD64 and IA64
 #  targets.
 #
-#  The buildtime testing is provided by nmakehlp and rules.vc.
+#  The build-time testing is provided by nmakehlp and rules.vc.
 #
 #  Derived from the Tcl msvc build-system files.
 #
+#  To make a standard DLL:
+#    nmake -f makefile.vc OPTS=none
+#
+#  To make a static library linked with the msvc runtime:
+#    nmake -f makefile.vc OPTS=static,msvcrt
+#
+#  To make a debug dll:
+#    nmake -f makefile.vc OPTS=symbols
+#
+#  To run the tests:
+#    nmake -f makefile.vc OPTS=none test
+#
+#  To make a 64 bit version using a 64bit command prompt:
+#    nmake -f makefile.vc MACHINE=AMD64 OPTS=none test
+#
+#  The build files are output into ..\build
 #
 
 !if !exist("makefile.vc")
@@ -18,7 +34,7 @@ Please `cd` to its location first.
 !endif
 
 ROOT            = ..
-#BUILD_ROOT	= $(ROOT)\builds
+BUILDS		= $(ROOT)\builds^\
 SRCDIR		= $(ROOT)\src
 INCLUDEDIR	= $(ROOT)\include
 TESTDIR		= $(ROOT)\tests
@@ -26,13 +42,9 @@ DEMOSDIR	= $(ROOT)\demos
 EXAMPLESDIR	= $(ROOT)\examples
 WINDIR		= $(ROOT)\win
 
-# HACK FOR WIRE - we need a static build and I don't fancy messing with the build script.
-!ifndef OPTS
-OPTS=static,msvcrt
-!endif
-
 !include "rules.vc"
 
+SUFX = $(SUFX:x=)
 
 OBJS = \
 	$(TMP_DIR)\column.obj \
@@ -110,7 +122,7 @@ cdebug	= -DNDEBUG
 !endif
 !else if "$(MACHINE)" == "IA64" || "$(MACHINE)" == "AMD64"
 ### Warnings are too many, can't support warnings into errors.
-cdebug	= -D_DEBUG -Zi -WX $(DEBUGFLAGS)
+cdebug	= -D_DEBUG -Zi -W3 $(DEBUGFLAGS)
 !else
 cdebug	= -D_DEBUG -Zi -WX $(DEBUGFLAGS)
 !endif
@@ -156,7 +168,7 @@ CFLAGS   = $(cflags) $(cdebug) $(crt) $(INCLUDES)
 #---------------------------------------------------------------------
 
 !if $(DEBUG)
-ldebug	= -debug:full -debugtype:cv
+ldebug	= -debug
 !if $(MSVCRT)
 ldebug = $(ldebug) -nodefaultlib:msvcrt
 !endif
@@ -190,7 +202,9 @@ guilflags = $(lflags) -subsystem:windows
 # Avoid 'unresolved external symbol __security_cookie' errors.
 # c.f. http://support.microsoft.com/?id=894573
 !if "$(MACHINE)" == "IA64" || "$(MACHINE)" == "AMD64"
+!if $(VCVERSION) >= 1400 && $(VCVERSION) < 1500
 baselibs   = $(baselibs) bufferoverflowU.lib
+!endif
 !endif
 
 
@@ -238,42 +252,43 @@ $**
 	$(_VC_MANIFEST_EMBED_DLL)
 	-@del $*.exp
 !endif
-	$(CPY) $@ ..\builds\
+	$(CPY) $@ $(BUILDS)
+	$(CPY) $(@:.dll=.lib) $(BUILDS)
 
 $(MKTEST): $(TESTOBJS)
 	$(link32) $(conlflags) -out:$@ $(MKIMPLIB) @<<
 $**
 <<
 	$(_VC_MANIFEST_EMBED_EXE)
-	$(CPY) $@ ..\builds\
+	$(CPY) $@ $(BUILDS)
 
 $(MKBUG): $(TMP_DIR)\mkbug.obj
 	$(link32) $(conlflags) -out:$@ $(MKIMPLIB) @<<
 $**
 <<
 	$(_VC_MANIFEST_EMBED_EXE)
-	$(CPY) $@ ..\builds\
+	$(CPY) $@ $(BUILDS)
 
 $(MKDEMO): $(TMP_DIR)\demo.obj
 	$(link32) $(conlflags) -out:$@ $(MKIMPLIB) @<<
 $**
 <<
 	$(_VC_MANIFEST_EMBED_EXE)
-	$(CPY) $@ ..\builds\
+	$(CPY) $@ $(BUILDS)
 
 $(MKDUMP): $(TMP_DIR)\dump.obj
 	$(link32) $(conlflags) -out:$@ $(MKIMPLIB) @<<
 $**
 <<
 	$(_VC_MANIFEST_EMBED_EXE)
-	$(CPY) $@ ..\builds\
+	$(CPY) $@ $(BUILDS)
 
 $(MKHASH): $(TMP_DIR)\mkhash.obj
 	$(link32) $(conlflags) -out:$@ $(MKIMPLIB) @<<
 $**
 <<
 	$(_VC_MANIFEST_EMBED_EXE)
-	$(CPY) $@ ..\builds\
+	$(CPY) $@ $(BUILDS)
 
 #---------------------------------------------------------------------
 # Implicit rules

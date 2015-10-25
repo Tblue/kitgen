@@ -1,5 +1,5 @@
 # test_stringtype.py -- Test Metakit Python bindings for string type
-# $Id: test_stringtype.py 1230 2007-03-09 15:58:53Z jcw $
+# $Id$
 # This is part of Metakit, see http://www.equi4.com/metakit/
 
 from mktestsupport import *

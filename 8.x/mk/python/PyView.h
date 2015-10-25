@@ -1,5 +1,5 @@
 // PyView.h --
-// $Id: PyView.h 1230 2007-03-09 15:58:53Z jcw $
+// $Id$
 // This is part of MetaKit, see http://www.equi4.com/metakit.html
 // Copyright (C) 1999-2004 Gordon McMillan and Jean-Claude Wippler.
 //
@@ -36,12 +36,13 @@ extern PyTypeObject PyROViewertype;
 #define IMMUTABLEROWS 2
 
 class PyView: public PyHead, public c4_View {
-    PyView *_base;
+	PyView *_base;
+    PyObject *_owner;
     int _state;
   public:
     PyView();
-    PyView(const c4_View &o, PyView *owner = 0, int state = BASE);
-    ~PyView(){}
+    PyView(const c4_View &o, PyObject *owner, PyView *base = 0, int state = BASE);
+    ~PyView();
     void insertAt(int i, PyObject *o);
     PyRowRef *getItem(int i);
     PyView *getSlice(int s, int e);
