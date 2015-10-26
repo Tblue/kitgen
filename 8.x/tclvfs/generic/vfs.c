@@ -20,6 +20,11 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
+/* See https://sourceforge.net/p/tcl/bugs/5109/#1506 */
+#if defined(_WIN32) && !defined(_WIN64)
+#  define _USE_32BIT_TIME_T
+#endif
+
 #ifdef HAVE_SYS_STAT_H
 #  include <sys/stat.h>
 #endif
