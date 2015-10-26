@@ -95,6 +95,7 @@ case $cli-$dyn-$gui in 0-0-0) cli=1 dyn=1 gui=1 ;; esac
 
     MINGW*)
       echo "CC         = ${CC:=gcc}"
+      echo 'CFLAGS    += -I$(shell pwd)/../../mingw_include'
       echo 'LDFLAGS    = build/lib/dde1*/*tcldde1*.a build/lib/reg1*/*tclreg1*.a'
       [ $root != "8.4" ]   && echo 'LDFLAGS   += -lws2_32'
       if [ ${root#8.} -ge 6 ]; then
