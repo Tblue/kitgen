@@ -107,7 +107,6 @@ case $cli-$dyn-$gui in 0-0-0) cli=1 dyn=1 gui=1 ;; esac
       echo 'CLIOBJ     = $(OBJ) $(OUTDIR)/tclAppInit.o $(OUTDIR)/tclkitsh.res.o'
       echo 'DYNOBJ     = $(CLIOBJ) $(OUTDIR)/tkdyn/wish.res.o'
       echo 'GUIOBJ     = $(OBJ) $(OUTDIR)/winMain.o $(OUTDIR)/tclkit.res.o'
-      echo 'PRIV       = install-headers install-private-headers'
       echo 'EXE        = .exe'
       [ -x $upx ] && echo "UPX        = $upx"
       plat=win
